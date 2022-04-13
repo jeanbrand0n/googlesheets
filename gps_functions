@@ -1,0 +1,51 @@
+/**
+ * Create menu with custom functions in a Google Sheet.
+ */
+function onOpen() {
+  var spreadsheet = SpreadsheetApp.getActive();
+  var menuItems = [
+    {name: 'Create Map Links', functionName: 'createMapLinks'},
+  ]; 
+  spreadsheet.addMenu('Custom Functions', menuItems);
+}
+
+/**
+ * Create map hyperlinks to various mapping services with defined lat/lon coordinates from two columns.
+ * 
+ * The user should define the following variables below.
+ * sheetName: the name of the Google Sheet you would like to modify with the script.
+ * {lat,lon}Column: The column number of lat/lon coordinates. Column A = 1, B = 2 ...
+ * linkColumn: The column number where the generated links are written.
+ */
+ 
+ function createMapLinks() {
+  // These four variables should be defined by the user.
+  var sheetName = 'data';
+  var latColumn = 1;
+  var lonColumn = 2;
+  var linkColumn = 3;
+
+  var sheet = SpreadsheetApp.getActive().getSheetByName(sheetName);
+  var lastRow = sheet.getLastRow();
+  lastRow--;
+  var data = sheet.getRange(2,1,lastRow,2).getValues();
+
+  for (var i = 0 ; i < lastRow;i++){
+    if (data[i][latColumn] != "" || data[i][lonColumn] != "" ){
+
+      // Coordinate concatenation and base URLs
+      var coordinates = data[i][0]+ "," + data[i][1];
+      var bing_url = 'https://bing.com/maps/default.aspx?where1=' + coordinates + '&lvl=17&style=o';
+      var google_url = 'http://maps.google.com/maps?t=k&q=' + coordinates;
+      var google_earth_url = 'https://earth.google.com/web/@' + coordinates + ',12000d';
+      
+      const RichTextValue = SpreadsheetApp.newRichTextValue()
+      .setText("Bing / Gmaps / Earth")
+      .setLinkUrl(0,4, bing_url)
+      .setLinkUrl(7,12, google_url)
+      .setLinkUrl(15,20, google_earth_url)
+      .build();
+      sheet.getRange(i+2,linkColumn).setRichTextValue(RichTextValue);
+    }
+  }
+}
